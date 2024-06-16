@@ -1,0 +1,32 @@
+---
+version: "3.8"
+
+services:
+  collector:
+    image: report_colletor:1.0
+    build:
+      dockerfile: Dockerfile
+    ports:
+      - "5555:5000"
+    depends_on:
+      - mongodb
+
+  mongodb:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    ports:
+      - "27117:27017"
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - "8777:8081"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: example
+      ME_CONFIG_MONGODB_URL: mongodb://root:example@mongodb:27017/
+      ME_CONFIG_BASICAUTH: false

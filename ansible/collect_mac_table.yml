@@ -1,0 +1,31 @@
+---
+- name: Collect mac addresses of switches
+  hosts: device_roles_access-switch
+  gather_facts: False
+
+  connection: network_cli
+
+  tasks:
+    - name: Collect mac addresses
+      cisco.ios.ios_command:
+        commands:
+          - show mac address-table
+      register: mac_table_output
+
+    - name: Parse with textfsm
+      ansible.builtin.set_fact:
+        macs: "{{ mac_table_output.stdout[0] | parse_cli_textfsm('textfsm/cisco_ios_show_mac-address-table.textfsm')}}"
+
+    - name: Send data to API
+      uri:
+        url: http://localhost:5555/add_mac_record
+        method: POST
+        body_format: json
+        headers:
+          Content-Type: application/json
+        body:
+          hostname: "{{ inventory_hostname }}"
+          data: "{{ macs }}"
+
+
+
